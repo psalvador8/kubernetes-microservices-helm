@@ -1,0 +1,7 @@
+# Helm generated packages
+*.tgz
+charts/*.tgz
+
+# Helmfile cache
+.helmfile/
+helmfile.cache/
