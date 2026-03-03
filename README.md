@@ -105,11 +105,10 @@ Each microservice includes:
 ---
 
 ## 🔮 Potential Improvements
-- Add Helm chart packaging for reusable deployments  
 - Implement Horizontal Pod Autoscaling (HPA)  
 - Add Ingress controller with TLS termination  
 - Integrate Prometheus & Grafana for monitoring  
-- Implement centralized logging (ELK / Loki)  
+- Automate Helm chart versioning and CI/CD deployment
 
 ---
 
