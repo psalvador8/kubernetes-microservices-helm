@@ -1,82 +1,109 @@
 # 🛒 Kubernetes Microservices Deployment with Helm & Helmfile
 
-Production-ready deployment of a distributed microservices application on Kubernetes using **Helm charts** and **Helmfile orchestration**.
+Production-style deployment of a distributed microservices e-commerce platform on Kubernetes using **Helm charts** and **Helmfile orchestration**.
 
-This project demonstrates secure service exposure, replica-based availability, protocol-aware health checks, and modular release management — reflecting real-world cloud-native deployment practices.
-
----
-
-## 📌 Project Overview
-
-This repository deploys a cloud-native e-commerce microservices application to a Kubernetes cluster using:
-
-- **Helm** for modular packaging  
-- **Helmfile** for declarative multi-chart orchestration  
-- Kubernetes Deployments & Services  
-- Replica-based high availability  
-- Protocol-aware health checks (gRPC, HTTP, TCP)  
-
-The goal is not just to run containers — but to model production-style architecture patterns.
+This project demonstrates **secure service exposure, replica-based availability, protocol-aware health checks, and modular release management**, reflecting real-world **cloud-native deployment practices**.
 
 ---
 
-## 🧱 Architecture
+# 📌 Project Overview
 
-The system consists of multiple independent microservices communicating internally via Kubernetes service discovery.
+This repository deploys a **cloud-native microservices application** to a Kubernetes cluster using modern deployment tooling and best practices.
 
-### 🔹 Traffic Flow
+The project focuses on **production-style deployment patterns**, including:
 
-- External traffic enters through a **LoadBalancer** service.
-- The **Frontend** routes requests internally via **ClusterIP** services.
-- Backend services communicate using **gRPC and HTTP**.
-- Redis supports cart session storage within the cluster.
+- Helm for modular application packaging
+- Helmfile for declarative multi-chart orchestration
+- Kubernetes Deployments & Services
+- Replica-based high availability
+- Protocol-aware health checks (gRPC, HTTP, TCP)
+- Internal service discovery via ClusterIP services
 
-### 🔹 Services Deployed
-
-- Frontend (public entry point)
-- Checkout Service
-- Product Catalog Service
-- Recommendation Service
-- Cart Service
-- Redis (cart session storage)
-- Currency Service
-- Payment Service
-- Shipping Service
-- Email Service
-- Ad Service
+The goal is not just to run containers — but to model **real-world Kubernetes architecture and operational patterns**.
 
 ---
 
-## ⚙️ Deployment Strategy
+# 🧭 Architecture
 
-Each service is deployed as a Kubernetes **Deployment** with:
+![Microservices Architecture](docs/microservices-architecture.png)
 
-- Replica configuration (2 replicas for core services)
-- Liveness and readiness probes
-- Environment-based service discovery
-- Label selectors for routing
-- Resource requests and limits (applied to selected services)
+### Request Flow
 
-### Service Types
+```
+Customer
+   ↓
+LoadBalancer Service
+   ↓
+Frontend Service
+   ↓
+Internal Microservices
+   ↓
+Redis (cart session storage)
+```
 
-- `LoadBalancer` → Frontend (public access)
-- `ClusterIP` → Internal services (secure internal communication)
+External traffic enters the cluster through a **LoadBalancer service** exposing the Frontend application.
+
+The **Frontend service** acts as the entry point and communicates with backend services responsible for checkout, catalog management, recommendations, payments, shipping, and notifications.
+
+Internal communication between services occurs via **Kubernetes ClusterIP services**, using **gRPC and HTTP protocols** depending on service implementation.
+
+Redis provides **cart session storage**, enabling temporary persistence of user shopping cart data.
 
 ---
 
-## 🩺 Health Checks
+# 🧰 Technologies Used
 
-Health probes are aligned with service protocols:
-
-- gRPC probes for backend services
-- HTTP probes for Frontend
-- TCP socket probes for Redis
-
-This enables Kubernetes self-healing and accurate availability checks.
+- Kubernetes
+- Helm
+- Helmfile
+- Docker
+- Redis
+- gRPC
+- HTTP
+- Linux
 
 ---
 
-## 📦 Helm Chart Structure
+# ⚙️ Deployment Strategy
+
+Each service is deployed as a **Kubernetes Deployment** with production-oriented configuration:
+
+- Multiple replicas for critical services
+- Readiness and liveness probes
+- Service discovery through Kubernetes DNS
+- Label selectors for routing traffic
+- Resource requests and limits (applied selectively)
+
+### Service Exposure Model
+
+| Service Type | Purpose |
+|---------------|--------|
+| **LoadBalancer** | Exposes the Frontend to external users |
+| **ClusterIP** | Enables secure internal service-to-service communication |
+
+This architecture ensures backend services remain **private inside the cluster**, reducing attack surface.
+
+---
+
+# 🩺 Health Checks
+
+Health probes are aligned with each service protocol to ensure accurate health monitoring.
+
+| Service Type | Probe Type |
+|---------------|-----------|
+| Backend services | gRPC health probes |
+| Frontend | HTTP readiness & liveness probes |
+| Redis | TCP socket probe |
+
+These probes allow Kubernetes to:
+
+- Automatically restart unhealthy containers
+- Route traffic only to healthy pods
+- Maintain application reliability
+
+---
+
+# 📦 Helm Chart Structure
 
 ```
 charts/
@@ -90,77 +117,174 @@ charts/
 │   └── values.yaml
 ```
 
-- `microservice` chart packages application services  
-- `redis` chart handles the stateful component  
+- **microservice chart** packages application services
+- **redis chart** manages the stateful component
 
-This modular structure enables reusable deployments and environment-based customization.
+This modular structure enables:
+
+- Reusable deployment templates
+- Environment-based configuration
+- Simplified application version management
 
 ---
 
-## 📜 Helmfile Orchestration
+# 📜 Deployment Orchestration with Helmfile
 
 Instead of installing charts manually, deployments are managed declaratively using **Helmfile**.
 
-The entire stack is deployed with:
+Helmfile manages the deployment of multiple Helm charts declaratively from a single configuration file.
+
+It provides:
+
+- Centralized multi-release management
+- Declarative infrastructure state
+- Reproducible deployments
+- Simplified upgrades and rollbacks
+
+This mirrors **production-style release management for multi-service applications**.
+
+---
+
+# 🚀 Quick Deployment
+
+Prerequisites:
+
+- Kubernetes cluster
+- Helm installed
+- Helmfile installed
+
+Deploy the full application stack:
 
 ```bash
 helmfile sync
 ```
 
-Helmfile provides:
+Verify pods are running:
 
-- Centralized multi-release management  
-- Declarative infrastructure state  
-- Reproducible deployments  
-- Simplified upgrades and synchronization  
+```bash
+kubectl get pods
+```
 
-This mirrors production-style release management for multi-service applications.
-
----
-
-## 🛟 High Availability & Fault Tolerance
-
-- Core services run with multiple replicas  
-- Kubernetes automatically replaces failed pods  
-- Readiness probes prevent traffic to unhealthy containers  
-- Redis uses in-cluster mounted storage (`emptyDir`) for cart session state  
-
-> **Note:** `emptyDir` provides runtime storage. This can be upgraded to a PersistentVolumeClaim (PVC) for durable storage in production environments.
+Access the application through the **Frontend LoadBalancer service**.
 
 ---
 
-## 🎯 What This Project Demonstrates
+# 🛟 High Availability & Fault Tolerance
 
-- Distributed microservices deployment on Kubernetes  
-- Secure service exposure strategy  
-- Replica-based availability  
-- Protocol-aware health monitoring  
-- Helm-based modular packaging  
-- Helmfile-driven orchestration  
-- Stateful component integration  
+The application incorporates several reliability mechanisms:
 
----
+- Core services run with multiple replicas
+- Kubernetes automatically replaces failed pods
+- Readiness probes prevent traffic to unhealthy containers
+- Redis stores cart session data within the cluster
 
-## 🚀 Potential Improvements
+Currently Redis uses:
 
-- Add PersistentVolumeClaim (PVC) for Redis durability  
-- Implement Horizontal Pod Autoscaling (HPA)  
-- Add Ingress controller with TLS termination  
-- Integrate Prometheus & Grafana for observability  
-- Standardize resource policies across all services  
+`emptyDir`
 
----
+This provides temporary runtime storage.
 
-## 💡 Key Takeaway
+In production environments this can be upgraded to:
 
-Deploying containers is straightforward.  
-Designing resilient, modular, production-aware systems requires architectural discipline.
+`PersistentVolumeClaim (PVC)`
 
-This project reflects not just deployment — but structured system design using Kubernetes, Helm, and Helmfile.
+to enable durable storage across pod restarts.
 
 ---
 
-## 👤 Author
+# 🧠 Design Decisions
+
+Several architectural choices were made to reflect **real-world Kubernetes deployment practices**:
+
+- **ClusterIP services** used for internal communication to reduce external exposure
+- **LoadBalancer service** used only for the Frontend entry point
+- **Helm charts** used for modular packaging of application components
+- **Helmfile** used to orchestrate multi-service deployments declaratively
+- **Protocol-specific health probes** implemented for accurate service monitoring
+- **Replica-based deployments** used to improve availability and resilience
+- **Separation of charts** for stateless services and Redis to simplify lifecycle management
+
+These decisions model how distributed applications are typically deployed in **production Kubernetes environments**.
+
+---
+
+# 🏗️ System Design Principles
+
+This architecture reflects several core cloud-native design principles.
+
+### Loose Coupling
+Each microservice runs independently and communicates through service endpoints, enabling independent scaling and deployment.
+
+### Fault Isolation
+Failures in one service do not directly impact other services due to container isolation and Kubernetes service routing.
+
+### Scalability
+Replica-based deployments allow services to scale horizontally as demand increases.
+
+### Observability
+Health probes enable Kubernetes to monitor service health and maintain system stability through automatic restarts.
+
+### Infrastructure Abstraction
+Helm charts abstract deployment configuration, enabling consistent deployments across environments.
+
+---
+
+# 🎯 What This Project Demonstrates
+
+- Distributed microservices deployment on Kubernetes
+- Secure service exposure patterns
+- Replica-based service availability
+- Protocol-aware health monitoring
+- Helm-based modular packaging
+- Helmfile-driven orchestration
+- Integration of stateless and stateful components
+
+---
+
+# 🚀 Potential Improvements
+
+Future enhancements could include:
+
+- Add **PersistentVolumeClaim (PVC)** for Redis durability
+- Implement **Horizontal Pod Autoscaler (HPA)**
+- Introduce **Ingress controller with TLS termination**
+- Add **Prometheus & Grafana** for observability
+- Implement **centralized logging**
+- Apply consistent **resource limits and policies across services**
+
+---
+
+# 📁 Repository Structure
+
+```
+├── README.md
+├── helmfile.yaml
+├── charts/
+│   ├── microservice/
+│   │   ├── templates/
+│   │   ├── Chart.yaml
+│   │   └── values.yaml
+│   └── redis/
+│       ├── templates/
+│       ├── Chart.yaml
+│       └── values.yaml
+└── docs/
+    └── microservices-architecture.png
+```
+
+---
+
+# 💡 Key Takeaway
+
+Running containers is straightforward.
+
+Designing **scalable, resilient, and modular distributed systems** requires careful architectural planning.
+
+This project demonstrates how Kubernetes, Helm, and Helmfile can be combined to manage **complex microservices deployments using production-oriented practices**.
+
+---
+
+# 👤 Author
 
 **Priscilla Salvador**  
 Cloud & DevOps Engineer
